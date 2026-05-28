@@ -136,6 +136,17 @@ Esempi:
 - software, SAP, Microsoft, IT services, cybersecurity, digital = Tech
 - pharma, diagnostics, medical devices, life sciences = Healthcare
 
+Regole stage:
+Se il testo contiene:
+- "mandato sell"
+- "sell-side mandate"
+- "advisor incaricato"
+- "preparazione teaser"
+- "kick-off processo"
+- "vendor preparation"
+
+→ process_stage = preparation
+
 Regole target name:
 - Il target deve essere solo il nome della società.
 - Non includere nel nome target frasi di processo come:
@@ -151,6 +162,37 @@ Esempio:
 → seller_or_sponsor = Azzurra Capital
 → notes = in vendita da Azzurra Capital
 
+Regole stage vs advisor:
+
+Se è presente un advisor sell-side nominato:
+→ NON usare Beauty Contest.
+
+In presenza di:
+- "mandato sell"
+- advisor già incaricato
+- advisor nominato
+- "sell-side advisor"
+- banca incaricata
+
+→ usare almeno:
+process_stage = preparation
+
+Beauty Contest va usato solo se:
+- l'advisor non è ancora assegnato
+- è in corso una selezione advisor
+- il testo descrive un advisor bake-off / beauty contest
+
+Regole buyer:
+
+Se viene citato genericamente:
+- sponsor finanziario
+- private equity
+- investitore
+- fondo
+
+ma senza nome specifico,
+→ NON valorizzare buyer.
+Inserire eventualmente l'informazione nelle notes.
 REGOLE BUYER MULTIPLI
 
 Se più buyer sono interessati allo stesso asset/processo:
