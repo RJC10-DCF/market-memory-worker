@@ -136,6 +136,24 @@ Esempi:
 - software, SAP, Microsoft, IT services, cybersecurity, digital = Tech
 - pharma, diagnostics, medical devices, life sciences = Healthcare
 
+MULTIPLE BUYERS RULES
+
+If multiple buyers are interested in the same asset/process:
+- create ONLY ONE deal
+- do NOT create separate deals combining buyer + target
+- the target remains the company/process being discussed
+- all interested buyers must be attached to the same deal
+
+Examples:
+"Rinovha interests Peninsula, Apheon, Ambienta and Apeiron"
+→ target = Rinovha
+→ buyers = Peninsula, Apheon, Ambienta, Apeiron
+
+"Portfolio company of Xenon attracting interest from Peninsula and Ambienta"
+→ seller_or_sponsor = Xenon
+→ buyers = Peninsula, Ambienta
+→ create only one deal
+
 Output:
 - JSON array
 - un record per ogni combinazione deal-advisor-ruolo rilevante
