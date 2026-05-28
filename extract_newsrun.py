@@ -136,23 +136,31 @@ Esempi:
 - software, SAP, Microsoft, IT services, cybersecurity, digital = Tech
 - pharma, diagnostics, medical devices, life sciences = Healthcare
 
-MULTIPLE BUYERS RULES
+REGOLE BUYER MULTIPLI
 
-If multiple buyers are interested in the same asset/process:
-- create ONLY ONE deal
-- do NOT create separate deals combining buyer + target
-- the target remains the company/process being discussed
-- all interested buyers must be attached to the same deal
+Se più buyer sono interessati allo stesso asset/processo:
+- creare UN SOLO deal
+- NON creare deal separati buyer + target
+- il target deve restare la società o asset oggetto del processo
+- tutti i buyer interessati devono essere associati allo stesso deal
 
-Examples:
-"Rinovha interests Peninsula, Apheon, Ambienta and Apeiron"
+Esempi:
+
+"Rinovha interessa Peninsula, Apheon, Ambienta e Apeiron"
 → target = Rinovha
 → buyers = Peninsula, Apheon, Ambienta, Apeiron
+→ creare un solo deal
 
-"Portfolio company of Xenon attracting interest from Peninsula and Ambienta"
+"Portfolio company di Xenon che attrae interesse da più sponsor"
 → seller_or_sponsor = Xenon
-→ buyers = Peninsula, Ambienta
-→ create only one deal
+→ tutti gli sponsor vanno inseriti come buyer dello stesso deal
+
+Non creare nomi sintetici del deal come:
+- "Peninsula - Rinovha"
+- "Ambienta - Rinovha"
+- "Buyer - Target"
+
+a meno che non sia esplicitamente descritto un deal bilaterale firmato.
 
 Output:
 - JSON array
