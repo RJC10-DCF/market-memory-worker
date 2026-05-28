@@ -136,6 +136,21 @@ Esempi:
 - software, SAP, Microsoft, IT services, cybersecurity, digital = Tech
 - pharma, diagnostics, medical devices, life sciences = Healthcare
 
+Regole target name:
+- Il target deve essere solo il nome della società.
+- Non includere nel nome target frasi di processo come:
+  "in vendita",
+  "mandato sell-side",
+  "processo in corso",
+  "interessata da",
+  "di proprietà di".
+- Le frasi di processo vanno in notes, stage o seller_or_sponsor.
+Esempio:
+"Desa in vendita da Azzurra Capital"
+→ target = Desa
+→ seller_or_sponsor = Azzurra Capital
+→ notes = in vendita da Azzurra Capital
+
 REGOLE BUYER MULTIPLI
 
 Se più buyer sono interessati allo stesso asset/processo:
