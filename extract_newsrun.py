@@ -206,6 +206,30 @@ Beauty Contest va usato solo se:
 - il testo descrive un advisor bake-off / beauty contest
 
 Regole buyer:
+Se un buyer nominato:
+- ha fatto un'offerta
+- ha presentato una NBO
+- è tra le NBO ricevute
+- è tra gli offerenti
+- ha inviato una proposta
+- è in shortlist
+- è in fase avanzata
+
+→ il buyer deve essere valorizzato nel campo Buyer.
+
+Esempi:
+
+"Azimut ha fatto un'offerta"
+→ buyer = Azimut
+→ process_stage = marketing
+
+"In arrivo NBO tra cui quella di Azimut"
+→ buyer = Azimut
+→ process_stage = marketing
+
+"NBO ricevute da Azimut e Clessidra"
+→ buyers = Azimut, Clessidra
+→ process_stage = marketing
 
 Se viene citato genericamente:
 - sponsor finanziario
