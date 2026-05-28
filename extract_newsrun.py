@@ -1,0 +1,408 @@
+import os
+import json
+import re
+from dotenv import load_dotenv
+from openai import OpenAI
+from supabase import create_client
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
+SOURCE_FILE_NAME = "20260514_Newsrun"
+
+PROMPT = """
+Sei un estrattore dati M&A per una banca d'affari.
+Leggi la newsrun e restituisci SOLO JSON valido.
+
+Limita l'output ai primi 30 deal della newsrun.
+
+Per ogni deal identifica:
+- deal_name
+- normalized_deal_name
+- description
+- industry
+- key_financials
+- notes
+- perimeter
+- advisor_name
+- normalized_advisor_name
+- advisor_role
+- process_type
+- process_stage
+- status
+- timing
+- seller_or_sponsor
+- buyer
+- signal_type
+- signal_category
+- original_text
+- confidence
+
+advisor_role ammessi:
+sell_side, buy_side, debt_advisor, financial_dd, commercial_dd, legal_dd,
+tax_dd, vendor_due_diligence, buyer_due_diligence, restructuring,
+strategic_advisor, generic_advisor, unclear
+
+process_stage ammessi:
+rumor, beauty_contest, preparation, marketing, due_diligence,
+advanced_negotiation, signed_closed, paused, unknown
+
+Regole description:
+- description = solo business della target
+- non inserire buyer, advisor, stage, esclusività o processo nella description
+
+Regole key_financials:
+- estrai ricavi, EBITDA, multipli, metriche finanziarie
+- esempio: €160m revenue, €11m EBITDA
+
+Regole notes:
+- note qualitative o processuali
+- esempi: vendita minoranza, one-to-one fallito, focus mercato US, pre-emptive tentato
+
+Regole perimeter:
+- usare solo per perimetro del deal
+- esempi: minority stake, majority stake, business SAP only, carve-out
+- se non c’è perimetro specifico: null
+
+Regole process_stage:
+- probabilmente in vendita / possible exit / stanno pensando all'exit = rumor
+- beauty contest / selezione advisor / pitch advisor = beauty_contest
+- solo mandato advisor senza altro avanzamento = preparation
+- advisor + VDD/FVDD senza teaser out = preparation
+- marketing post estate / marketing pre estate / marketing previsto = preparation
+- teaser in uscita / IM in preparazione / VDD ongoing / FVDD / CDD / BVDD = preparation
+- teaser out / IM out / marketing ongoing / processo live = marketing
+- NBO / offerte non vincolanti = marketing
+- in esclusiva / one-to-one / bilaterale = due_diligence
+- DD buy-side / buyer due diligence = due_diligence
+- BO entro / binding offer / offerte vincolanti / binding phase = advanced_negotiation
+- signed / signing / closed / closing = signed_closed
+- on-hold / fermo / pausato / processo fermo / dead = paused
+- se processo fermo dopo esclusiva, prevale paused
+
+Regole advisor:
+- mandato sell-side / advisor sell / mandato sell = sell_side
+- buy-side / advisor del buyer = buy_side
+- buyer in esclusiva = buyer, NON advisor
+- PwC/Deloitte/KPMG/EY possono essere M&A advisor o DD provider in base al contesto
+- PwC VDD / Deloitte VDD / KPMG FVDD / EY VDD = vendor_due_diligence o financial_dd
+- OC&C / Fortlane / BCG / Bain / Roland Berger / RB / Oliver Wyman / OW con VDD/CDD/BVDD = commercial_dd
+- KPMG DD buy-side per conto di X = buyer_due_diligence, buyer = X
+- se un advisor M&A e un provider DD compaiono nella stessa riga, crea record separati
+
+Regole VDD:
+- KPMG, EY, Deloitte, PwC + VDD/FVDD = accounting_vdd
+- OC&C, Fortlane, BCG, Bain, Roland Berger/RB, Oliver Wyman/OW + VDD/CDD/BVDD = business_vdd
+
+Regole signal:
+- VDD/FVDD/CDD/BVDD/legal VDD/tax VDD = vendor_due_diligence, category diligence
+- marketing post estate = marketing_after_summer, category timing
+- marketing pre estate = marketing_before_summer, category timing
+- teaser out / marketing live = marketing_live, category process
+- in esclusiva/one-to-one/bilaterale = exclusivity_granted, category process
+- BO entro = binding_phase, category process
+- buyer interessati/interesse strategici/PE interessati = buyer_interest, category buyer
+- no advisor / advisor non assegnato = advisor_tbd, category advisor
+- add-on = add_on_strategy, category shareholder
+- pre-emptive = pre_emptive_attempt, category process
+- one-to-one fallito = failed_bilateral, category process
+- vendita minoranza = minority_sale, category shareholder
+- on-hold/fermo = process_paused, category risk
+- se non c'è signal chiaro: signal_type = null, signal_category = null
+
+Regole sponsor/buyer:
+- testo tra parentesi con “di X” indica spesso sponsor/azionista attuale: seller_or_sponsor = X
+- “in passato c’era X” = notes, NON seller_or_sponsor
+- buyer/interessata/in esclusiva con/per conto di indica buyer
+- non perdere l'informazione tra parentesi
+
+Regole industry:
+- classifica ogni deal in UNA SOLA delle seguenti industry:
+  FMCG, Industrial, Business Service, Tech, Healthcare, Other
+
+- usa target name, description e notes per inferire l'industry
+- se non sei sicuro usa Other
+
+Esempi:
+- food, beverage, pane, pasta, consumer goods, caffè = FMCG
+- impianti, componentistica, macchinari, packaging, ventilazione, serrature = Industrial
+- servizi B2B, testing, outsourcing, HR, compliance, consulenza = Business Service
+- software, SAP, Microsoft, IT services, cybersecurity, digital = Tech
+- pharma, diagnostics, medical devices, life sciences = Healthcare
+
+Output:
+- JSON array
+- un record per ogni combinazione deal-advisor-ruolo rilevante
+- se una riga non ha advisor ma ha un signal importante, crea advisor_name = null
+- non inventare dati
+- usa confidence high/medium/low
+"""
+
+VALID_ADVISOR_ROLES = {
+    "sell_side", "buy_side", "debt_advisor", "financial_dd", "commercial_dd",
+    "legal_dd", "tax_dd", "vendor_due_diligence", "buyer_due_diligence",
+    "restructuring", "strategic_advisor", "generic_advisor", "unclear"
+}
+
+VALID_SIGNAL_TYPES = {
+    "advisor_mandate",
+    "vendor_due_diligence",
+    "buyer_interest",
+    "possible_exit",
+    "minority_sale",
+    "exclusivity_granted",
+    "binding_phase",
+    "process_paused",
+    "process_dead",
+    "failed_bilateral",
+    "pre_emptive_attempt",
+    "add_on_strategy",
+    "cross_border_m&a",
+    "valuation_signal",
+    "marketing_before_summer",
+    "marketing_after_summer",
+    "marketing_live",
+    "advisor_tbd",
+    "fvdd_started",
+    "process_preparation",
+    "other"
+}
+
+def canonical_name(name):
+    if not name:
+        return None
+    return name.split("(")[0].strip().lower()
+
+def get_source():
+    result = (
+        supabase.table("sources")
+        .select("id,file_name,raw_text,source_date,intelligence_source,source_owner")
+        .eq("source_type", "newsrun")
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+
+    if not result.data:
+        raise Exception("No newsrun found in sources")
+
+    return result.data[0]
+
+def extract_json(raw_text):
+    response = client.responses.create(
+        model="gpt-4.1",
+        max_output_tokens=12000,
+	input=[
+            {"role": "system", "content": "Sei un estrattore dati M&A preciso, conservativo e source-grounded."},
+            {"role": "user", "content": PROMPT + "\n\nNEWSRUN:\n" + raw_text}
+        ],
+    )
+    print("OPENAI RAW OUTPUT:")
+    print(response.output_text[:2000])
+
+    text = response.output_text.strip()
+
+    text = re.sub(r"^```json\s*", "", text)
+    text = re.sub(r"^```\s*", "", text)
+    text = re.sub(r"\s*```$", "", text)
+
+    return json.loads(text)
+
+def upsert_advisor(item):
+    name = item.get("advisor_name")
+    norm = item.get("normalized_advisor_name")
+
+    if not name or not norm:
+        return None
+
+    existing = (
+        supabase.table("advisors")
+        .select("id")
+        .eq("normalized_name", norm)
+        .execute()
+    )
+
+    if existing.data:
+        return existing.data[0]["id"]
+
+    inserted = supabase.table("advisors").insert({
+        "name": name,
+        "normalized_name": norm,
+    }).execute()
+
+    return inserted.data[0]["id"]
+
+def upsert_deal(item, source):
+    deal_name = item.get("deal_name")
+    normalized = item.get("normalized_deal_name") or canonical_name(deal_name)
+
+    if not deal_name or not normalized:
+        return None
+
+    existing = (
+        supabase.table("deals")
+        .select("id")
+        .eq("canonical_name", canonical_name(deal_name))
+        .execute()
+    )
+
+    if existing.data:
+        deal_id = existing.data[0]["id"]
+
+        existing_deal = (
+            supabase.table("deals")
+            .select("*")
+            .eq("id", deal_id)
+            .single()
+            .execute()
+            .data
+        )
+
+        def keep_new_or_old(new_value, old_value):
+            return new_value if new_value not in [None, ""] else old_value
+
+        supabase.table("deals").update({
+            "process_stage": keep_new_or_old(item.get("process_stage"), existing_deal.get("process_stage")),
+            "status": keep_new_or_old(item.get("status"), existing_deal.get("status")),
+            "timing": keep_new_or_old(item.get("timing"), existing_deal.get("timing")),
+            "seller_or_sponsor": keep_new_or_old(item.get("seller_or_sponsor"), existing_deal.get("seller_or_sponsor")),
+            "industry": keep_new_or_old(item.get("industry"), existing_deal.get("industry")),
+            "description": keep_new_or_old(item.get("description"), existing_deal.get("description")),
+            "key_financials": keep_new_or_old(item.get("key_financials"), existing_deal.get("key_financials")),
+            "notes": keep_new_or_old(item.get("notes"), existing_deal.get("notes")),
+            "perimeter": keep_new_or_old(item.get("perimeter"), existing_deal.get("perimeter")),
+            "intelligence_source": source.get("intelligence_source") or source.get("source_owner"),
+            "latest_update_date": source.get("source_date"),  
+            "confidence": item.get("confidence") or existing_deal.get("confidence") or "medium",
+        }).eq("id", deal_id).execute()
+
+        return deal_id
+
+    inserted = supabase.table("deals").insert({
+        "deal_name": deal_name,
+        "normalized_deal_name": normalized,
+        "canonical_name": canonical_name(deal_name),
+        "process_type": item.get("process_type") or "unclear",
+        "process_stage": item.get("process_stage") or "unknown",
+        "status": item.get("status"),
+        "timing": item.get("timing"),
+        "industry": item.get("industry"),
+        "intelligence_source": source.get("intelligence_source") or source.get("source_owner"),
+        "latest_update_date": source.get("source_date"),        
+        "seller_or_sponsor": item.get("seller_or_sponsor"),
+        "confidence": item.get("confidence") or "medium",
+        "description": item.get("description"),
+        "key_financials": item.get("key_financials"),
+        "notes": item.get("notes"),
+        "perimeter": item.get("perimeter"),
+    }).execute()
+
+    return inserted.data[0]["id"]
+
+def insert_deal_advisor(item, deal_id, advisor_id, source_id):
+    if not advisor_id or not deal_id:
+        return
+
+    role = item.get("advisor_role") or "unclear"
+    if role not in VALID_ADVISOR_ROLES:
+        role = "unclear"
+
+    existing = (
+        supabase.table("deal_advisors")
+        .select("id")
+        .eq("deal_id", deal_id)
+        .eq("advisor_id", advisor_id)
+        .eq("role", role)
+        .eq("source_id", source_id)
+        .execute()
+    )
+
+    if existing.data:
+        return
+
+    supabase.table("deal_advisors").insert({
+        "deal_id": deal_id,
+        "advisor_id": advisor_id,
+        "role": role,
+        "source_id": source_id,
+        "original_text": item.get("original_text"),
+        "confidence": item.get("confidence") or "medium",
+    }).execute()
+
+def insert_signal(item, deal_id):
+    signal_type = item.get("signal_type")
+    signal_category = item.get("signal_category")
+
+    if not signal_type or not deal_id:
+        return
+
+    if signal_type not in VALID_SIGNAL_TYPES:
+        signal_type = "other"
+
+    existing = (
+        supabase.table("signals")
+        .select("id")
+        .eq("deal_id", deal_id)
+        .eq("signal_type", signal_type)
+        .eq("description", item.get("original_text") or "")
+        .execute()
+    )
+
+    if existing.data:
+        return
+
+    supabase.table("signals").insert({
+        "signal_type": signal_type,
+        "signal_category": signal_category,
+        "entity_name": item.get("deal_name"),
+        "entity_type": "deal",
+        "description": item.get("original_text"),
+        "deal_id": deal_id,
+        "confidence": item.get("confidence") or "medium",
+    }).execute()
+
+def main():
+    source = get_source()
+    raw_text = source["raw_text"]
+    lines = [line for line in raw_text.splitlines() if line.strip()]
+
+    chunk_size = 25
+    all_items = []
+
+    print(f"Processing source: {source['file_name']}")
+    print(f"Total lines: {len(lines)}")
+
+    for i in range(0, len(lines), chunk_size):
+        chunk_lines = lines[i:i + chunk_size]
+        chunk_text = "\n".join(chunk_lines)
+
+        print(f"Extracting lines {i + 1}-{i + len(chunk_lines)}...")
+
+        try:
+            items = extract_json(chunk_text)
+            print(f"Extracted {len(items)} records from chunk")
+
+            for item in items:
+                deal_id = upsert_deal(item, source)                
+
+                advisor_id = upsert_advisor(item)
+                insert_deal_advisor(item, deal_id, advisor_id, source["id"])
+
+                insert_signal(item, deal_id)
+
+            all_items.extend(items)
+
+        except Exception as e:
+            print(f"ERROR processing chunk {i + 1}-{i + len(chunk_lines)}")
+            print(e)
+
+    print(f"Total extracted records: {len(all_items)}")    
+
+if __name__ == "__main__":
+    main()
