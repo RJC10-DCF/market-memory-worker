@@ -64,6 +64,29 @@ Regole key_financials:
 Regole notes:
 - note qualitative o processuali
 - esempi: vendita minoranza, one-to-one fallito, focus mercato US, pre-emptive tentato
+- notes deve riportare le informazioni qualitative e quantitative rilevanti non già rappresentate bene nelle colonne strutturate.
+- notes deve essere ricca ma sintetica.
+- includere sempre, se presenti nel testo:
+  - revenue / fatturato
+  - EBITDA / EBIT
+  - NFP / PFN
+  - multiplo atteso
+  - multiplo pagato
+  - valuation / prezzo
+  - quota in vendita
+  - majority / minority
+  - successione / management buy-in
+  - buyer interest generico
+  - numero di buyer interessati
+  - razionale del processo
+  - criticità del processo
+
+Esempi:
+"€120/130m fatturato; €13.5m EBITDA 2025; vendita maggioranza; ricerca sponsor per il 70%; multiplo atteso 8.0x–8.5x; management buy-in"
+
+"5/6 buyer interessati"
+
+"processo fermo per valuation gap"
 
 Regole perimeter:
 - usare solo per perimetro del deal
