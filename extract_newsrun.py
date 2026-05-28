@@ -214,6 +214,7 @@ Se un buyer nominato:
 - ha inviato una proposta
 - è in shortlist
 - è in fase avanzata
+- si è dichiarato interessato o ha mostrato interesse o ha detto che la guarda
 
 → il buyer deve essere valorizzato nel campo Buyer.
 
