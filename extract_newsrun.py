@@ -193,6 +193,15 @@ Se viene citato genericamente:
 ma senza nome specifico,
 → NON valorizzare buyer.
 Inserire eventualmente l'informazione nelle notes.
+
+Se il testo contiene:
+- buyer interessati
+- NBO ricevute
+- offerte ricevute
+- interesse da più sponsor
+
+→ process_stage = marketing
+
 REGOLE BUYER MULTIPLI
 
 Se più buyer sono interessati allo stesso asset/processo:
