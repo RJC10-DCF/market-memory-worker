@@ -34,7 +34,7 @@ try:
     }).eq("id", job_id).execute()
 
     result = subprocess.run(
-        ["py", "extract_newsrun.py"],
+        ["python", "extract_newsrun.py"],
         capture_output=True,
         text=True
     )
