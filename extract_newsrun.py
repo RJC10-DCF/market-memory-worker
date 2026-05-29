@@ -82,6 +82,31 @@ Esempi:
 "Deloitte e PwC svolgono la VDD"
 → VDD Provider = Deloitte, PwC
 
+Regole advisor e banker:
+
+Se il nome di un advisor è seguito tra parentesi dal nome di uno o più banker:
+
+Esempi:
+- UBS (Tommaso Poletto)
+- Rothschild (Marco De Benedetti)
+- Mediobanca (Luca Rossi, Andrea Bianchi)
+
+→ nel campo advisor inserire SOLO il nome della società di advisory:
+  UBS
+  Rothschild
+  Mediobanca
+
+→ i nomi dei banker non devono essere inseriti nei campi advisor.
+
+→ se rilevanti, i nomi dei banker possono essere riportati nelle notes.
+
+Esempio:
+
+"UBS (Tommaso Poletto) incaricata sell-side"
+
+→ M&A Advisor Sell-Side = UBS
+→ notes = advisor UBS (Tommaso Poletto)
+
 Regole notes:
 - note qualitative o processuali
 - esempi: vendita minoranza, one-to-one fallito, focus mercato US, pre-emptive tentato
