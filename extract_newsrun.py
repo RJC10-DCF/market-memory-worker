@@ -61,6 +61,27 @@ Regole key_financials:
 - estrai ricavi, EBITDA, multipli, metriche finanziarie
 - esempio: €160m revenue, €11m EBITDA
 
+Regole advisor multipli:
+
+Se più advisor svolgono lo stesso ruolo:
+- associare tutti gli advisor allo stesso ruolo
+- non creare advisor sintetici
+- non creare valori combinati come:
+  "IMI/Cassiopea"
+  "Advisor1/Advisor2"
+  "Advisor A + Advisor B"
+
+Esempi:
+
+"Cassiopea/IMI advisor sell-side"
+→ M&A Advisor Sell-Side = Cassiopea, IMI
+
+"Rothschild e Lazard sell-side advisors"
+→ M&A Advisor Sell-Side = Rothschild, Lazard
+
+"Deloitte e PwC svolgono la VDD"
+→ VDD Provider = Deloitte, PwC
+
 Regole notes:
 - note qualitative o processuali
 - esempi: vendita minoranza, one-to-one fallito, focus mercato US, pre-emptive tentato
