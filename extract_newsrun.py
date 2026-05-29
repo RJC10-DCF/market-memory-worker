@@ -465,7 +465,8 @@ def upsert_deal(item, source):
             "perimeter": keep_new_or_old(item.get("perimeter"), existing_deal.get("perimeter")),
             "intelligence_source": source.get("intelligence_source") or source.get("source_owner"),
             "latest_update_date": source.get("source_date"),  
-            "confidence": item.get("confidence") or existing_deal.get("confidence") or "medium",
+            "uploaded_by": source.get("uploaded_by"),
+			"confidence": item.get("confidence") or existing_deal.get("confidence") or "medium",
         }).eq("id", deal_id).execute()
 
         return deal_id
