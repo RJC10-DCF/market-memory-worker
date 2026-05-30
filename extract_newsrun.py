@@ -134,6 +134,145 @@ Esempi:
 
 "processo fermo per valuation gap"
 
+REGOLE BUYER, ADVISOR E CONTROPARTI
+
+PRINCIPIO FONDAMENTALE
+
+Una società interessata ad acquistare un asset NON è un advisor.
+
+Distinguere sempre tra:
+
+* Buyer / potenziale acquirente
+* M&A Advisor
+* DD Provider
+* VDD Provider
+* Seller / Sponsor
+
+CLASSIFICAZIONE BUYER
+
+Se una società è descritta come:
+
+* interessata all'asset
+* interessata all'acquisizione
+* potenziale acquirente
+* bidder
+* offerente
+* ha presentato un'offerta
+* ha presentato una NBO
+* ha presentato una proposta vincolante o non vincolante
+* è in shortlist
+* sta valutando il dossier
+* partecipa al processo
+* è tra i soggetti contattati
+* è tra gli investitori interessati
+
+ALLORA deve essere classificata come Buyer.
+
+Esempi:
+
+"Peninsula è interessata ad acquisire una quota di minoranza di Rinovha"
+
+→ Buyer = Peninsula
+
+"Apheon ha presentato una NBO"
+
+→ Buyer = Apheon
+
+"Ambienta, Apeiron e Peninsula stanno valutando l'asset"
+
+→ Buyer = Ambienta, Apeiron, Peninsula
+
+"Ricevute offerte da Azimut e Clessidra"
+
+→ Buyer = Azimut, Clessidra
+
+DIVIETO DI CLASSIFICAZIONE ERRATA
+
+Una società identificata come Buyer NON deve MAI essere classificata come:
+
+* M&A Advisor Sell-Side
+* M&A Advisor Buy-Side
+* DD Provider
+* VDD Provider
+
+Esempio ERRATO:
+
+"Peninsula è interessata ad acquisire Rinovha"
+
+→ M&A Advisor Sell-Side = Peninsula
+
+Questo è sbagliato.
+
+GESTIONE DI PIÙ BUYER
+
+Se più soggetti sono interessati allo stesso asset:
+
+Esempio:
+
+"Peninsula, Apheon, Ambienta e Apeiron sono interessati a Rinovha"
+
+Output corretto:
+
+Deal:
+
+* Rinovha
+
+Buyer:
+
+* Peninsula
+* Apheon
+* Ambienta
+* Apeiron
+
+NON creare più deal distinti.
+
+NON duplicare il deal.
+
+Deve esistere un solo deal con più buyer associati.
+
+STAGE DEL PROCESSO
+
+Se esistono buyer nominati che:
+
+* stanno valutando l'asset
+* sono stati contattati
+* hanno ricevuto il teaser
+* hanno espresso interesse
+* hanno presentato una NBO
+* hanno presentato un'offerta
+
+allora il processo deve essere classificato come:
+
+Stage = Marketing
+
+salvo che il testo indichi chiaramente una fase successiva (Due Diligence, Advanced Negotiation, Signed/Closed).
+
+ADVISOR
+
+Un advisor deve essere identificato solo quando il testo indica chiaramente:
+
+* advisor
+* banca incaricata
+* sell-side advisor
+* buy-side advisor
+* financial advisor
+* M&A advisor
+* banca d'affari
+* advisor del venditore
+* advisor dell'acquirente
+
+Esempi:
+
+"Rothschild advisor sell-side"
+
+→ M&A Advisor Sell-Side = Rothschild
+
+"UBS advisor buy-side"
+
+→ M&A Advisor Buy-Side = UBS
+
+Se il testo non indica un ruolo di advisor, NON classificare la società come advisor.
+
 Regole perimeter:
 - usare solo per perimetro del deal
 - esempi: minority stake, majority stake, business SAP only, carve-out
