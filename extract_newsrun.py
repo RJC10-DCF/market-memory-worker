@@ -263,9 +263,13 @@ Un advisor deve essere identificato solo quando il testo indica chiaramente:
 
 Esempi:
 
-"Rothschild advisor sell-side"
+"Rinovha (Xenon): Rothschild sell-side; Peninsula, Apheon, Ambienta e Apeiron interessati"
 
+→ target = Rinovha
+→ seller = Xenon
 → M&A Advisor Sell-Side = Rothschild
+→ buyer = Peninsula, Apheon, Ambienta, Apeiron
+→ creare un solo deal
 
 "UBS advisor buy-side"
 
