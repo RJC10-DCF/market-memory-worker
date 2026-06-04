@@ -752,7 +752,7 @@ def main():
                 insert_deal_advisor(item, deal_id, advisor_id, source["id"])
 
                 insert_signal(item, deal_id)
-				insert_deal_note(item, deal_id, source)
+                insert_deal_note(item, deal_id, source)
 
             all_items.extend(items)
 
