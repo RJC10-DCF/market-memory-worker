@@ -646,7 +646,10 @@ def insert_deal_buyer(item, deal_id):
     if not buyer or not deal_id:
         return
 
-    buyers = [b.strip() for b in buyer.split(",") if b.strip()]
+    if isinstance(buyer, list):
+        buyers = [str(b).strip() for b in buyer if str(b).strip()]
+    else:
+        buyers = [b.strip() for b in str(buyer).split(",") if b.strip()]
 
     for buyer_name in buyers:
         existing = (
