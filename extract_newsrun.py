@@ -755,6 +755,7 @@ def main():
 
                 insert_signal(item, deal_id)
                 insert_deal_note(item, deal_id, source)
+                insert_deal_buyer(item, deal_id)
 
             all_items.extend(items)
 
