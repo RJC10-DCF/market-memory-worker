@@ -638,6 +638,34 @@ def upsert_deal(item, source):
 
     return inserted.data[0]["id"]
 
+def insert_deal_buyer(item, deal_id):
+    buyer = item.get("buyer")
+
+    if not buyer or not deal_id:
+        return
+
+    buyers = [b.strip() for b in buyer.split(",") if b.strip()]
+
+    for buyer_name in buyers:
+        existing = (
+            supabase.table("deal_buyers")
+            .select("id")
+            .eq("deal_id", deal_id)
+            .ilike("buyer_name", buyer_name)
+            .execute()
+        )
+
+        if existing.data:
+            continue
+
+        supabase.table("deal_buyers").insert({
+            "deal_id": deal_id,
+            "buyer_name": buyer_name,
+            "buyer_role": "interested_buyer",
+            "original_text": item.get("original_text"),
+            "confidence": item.get("confidence") or "medium",
+        }).execute()
+		
 def insert_deal_advisor(item, deal_id, advisor_id, source_id):
     if not advisor_id or not deal_id:
         return
