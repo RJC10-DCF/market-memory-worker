@@ -155,6 +155,8 @@ Se una società è descritta come:
 * interessata all'asset
 * interessata all'acquisizione
 * potenziale acquirente
+* interessata a fare un'offerta o una NBO
+* interessata a presentare un'offerta o una NBO
 * bidder
 * offerente
 * ha presentato un'offerta
