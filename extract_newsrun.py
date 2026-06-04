@@ -608,7 +608,6 @@ def upsert_deal(item, source):
             "industry": keep_new_or_old(item.get("industry"), existing_deal.get("industry")),
             "description": keep_new_or_old(item.get("description"), existing_deal.get("description")),
             "key_financials": keep_new_or_old(item.get("key_financials"), existing_deal.get("key_financials")),
-            "notes": keep_new_or_old(item.get("notes"), existing_deal.get("notes")),
             "perimeter": keep_new_or_old(item.get("perimeter"), existing_deal.get("perimeter")),
             "intelligence_source": source.get("intelligence_source") or source.get("source_owner"),
             "latest_update_date": source.get("source_date"),  
