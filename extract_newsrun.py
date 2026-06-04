@@ -698,6 +698,32 @@ def insert_signal(item, deal_id):
         "confidence": item.get("confidence") or "medium",
     }).execute()
 
+def insert_deal_note(item, deal_id, source):
+    note_text = item.get("notes")
+
+    if not note_text or not deal_id:
+        return
+
+    existing = (
+        supabase.table("deal_notes")
+        .select("id")
+        .eq("deal_id", deal_id)
+        .eq("note_text", note_text)
+        .execute()
+    )
+
+    if existing.data:
+        return
+
+    supabase.table("deal_notes").insert({
+        "deal_id": deal_id,
+        "note_date": source.get("source_date"),
+        "source_date": source.get("source_date"),
+        "note_text": note_text,
+        "source": source.get("intelligence_source") or source.get("source_owner"),
+        "uploaded_by": source.get("uploaded_by"),
+    }).execute()
+
 def main():
     source = get_source()
     raw_text = source["raw_text"]
@@ -726,6 +752,7 @@ def main():
                 insert_deal_advisor(item, deal_id, advisor_id, source["id"])
 
                 insert_signal(item, deal_id)
+				insert_deal_note(item, deal_id, source)
 
             all_items.extend(items)
 
