@@ -515,7 +515,10 @@ def canonical_name(name):
 def get_source():
     result = (
         supabase.table("sources")
-        .select("id,file_name,raw_text,source_date,intelligence_source,source_owner")
+        .select(
+            "id,file_name,raw_text,source_date,"
+            "intelligence_source,source_owner,uploaded_by"
+        )
         .eq("source_type", "newsrun")
         .order("created_at", desc=True)
         .limit(1)
