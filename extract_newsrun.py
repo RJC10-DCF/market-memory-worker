@@ -736,30 +736,69 @@ def insert_signal(item, deal_id):
     }).execute()
 
 def insert_deal_note(item, deal_id, source):
-    note_text = item.get("notes")
+    if not deal_id:
+        return
 
-    if not note_text or not deal_id:
+    note_text = item.get("notes")
+    source_id = source.get("id")
+
+    if not note_text or not source_id:
+        return
+
+    note_text = str(note_text).strip()
+    if not note_text:
         return
 
     existing = (
         supabase.table("deal_notes")
-        .select("id")
+        .select("id,note_text")
         .eq("deal_id", deal_id)
-        .eq("note_text", note_text)
+        .eq("source_id", source_id)
+        .limit(1)
         .execute()
     )
 
     if existing.data:
+        existing_note = existing.data[0]
+        existing_text = (existing_note.get("note_text") or "").strip()
+
+        # Lo stesso upload può produrre più record per advisor/ruolo.
+        # Conserva la formulazione più completa.
+        if len(note_text) > len(existing_text):
+            (
+                supabase.table("deal_notes")
+                .update({
+                    "note_text": note_text,
+                    "note_date": source.get("source_date"),
+                    "source_date": source.get("source_date"),
+                    "source": (
+                        source.get("intelligence_source")
+                        or source.get("source_owner")
+                    ),
+                    "uploaded_by": source.get("uploaded_by"),
+                })
+                .eq("id", existing_note["id"])
+                .execute()
+            )
+
         return
 
-    supabase.table("deal_notes").insert({
-        "deal_id": deal_id,
-        "note_date": source.get("source_date"),
-        "source_date": source.get("source_date"),
-        "note_text": note_text,
-        "source": source.get("intelligence_source") or source.get("source_owner"),
-        "uploaded_by": source.get("uploaded_by"),
-    }).execute()
+    (
+        supabase.table("deal_notes")
+        .insert({
+            "deal_id": deal_id,
+            "source_id": source_id,
+            "note_date": source.get("source_date"),
+            "source_date": source.get("source_date"),
+            "note_text": note_text,
+            "source": (
+                source.get("intelligence_source")
+                or source.get("source_owner")
+            ),
+            "uploaded_by": source.get("uploaded_by"),
+        })
+        .execute()
+    )
 
 def main():
     source = get_source()
