@@ -636,7 +636,6 @@ def upsert_deal(item, source):
         "uploaded_by": source.get("uploaded_by"),
 		"description": item.get("description"),
         "key_financials": item.get("key_financials"),
-        "notes": item.get("notes"),
         "perimeter": item.get("perimeter"),
     }).execute()
 
